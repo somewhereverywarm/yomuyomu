@@ -3,44 +3,29 @@
  * オフライン対応とキャッシュ管理
  */
 
-const CACHE_NAME = 'yomuyomu-v1';
+const CACHE_NAME = 'yomuyomu-v2';
 
-// キャッシュするファイル
-const CACHE_FILES = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/js/app.js',
-    '/manifest.json',
-    '/icons/icon-192.png',
-    '/icons/icon-512.png'
-];
-
-// インストール時にキャッシュ
+// インストール時
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(CACHE_FILES))
-            .then(() => self.skipWaiting())
-    );
+    console.log('Service Worker: インストール');
+    self.skipWaiting();
 });
 
-// アクティベート時に古いキャッシュを削除
+// アクティベート時
 self.addEventListener('activate', (event) => {
+    console.log('Service Worker: アクティベート');
     event.waitUntil(
-        caches.keys()
-            .then((cacheNames) => {
-                return Promise.all(
-                    cacheNames
-                        .filter((name) => name !== CACHE_NAME)
-                        .map((name) => caches.delete(name))
-                );
-            })
-            .then(() => self.clients.claim())
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames
+                    .filter((name) => name !== CACHE_NAME)
+                    .map((name) => caches.delete(name))
+            );
+        })
     );
 });
 
-// リクエスト時にキャッシュを優先、なければネットワーク
+// リクエスト時
 self.addEventListener('fetch', (event) => {
     // API呼び出しはキャッシュしない
     if (event.request.url.includes('api.anthropic.com')) {
@@ -48,12 +33,20 @@ self.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                if (response) {
-                    return response;
+                // 成功したらキャッシュに保存
+                if (response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
                 }
-                return fetch(event.request);
+                return response;
+            })
+            .catch(() => {
+                // オフライン時はキャッシュから返す
+                return caches.match(event.request);
             })
     );
 });
