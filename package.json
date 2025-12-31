@@ -1,0 +1,21 @@
+{
+  "name": "yomuyomu",
+  "version": "1.0.0",
+  "description": "写真を撮ると文字を読み上げてくれるアプリ",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1",
+    "icons": "node scripts/generate-icons.js"
+  },
+  "keywords": [
+    "pwa",
+    "ocr",
+    "text-to-speech",
+    "kids",
+    "japanese"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "sharp": "^0.34.5"
+  }
+}

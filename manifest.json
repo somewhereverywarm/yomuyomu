@@ -1,0 +1,27 @@
+{
+    "name": "よむよむ",
+    "short_name": "よむよむ",
+    "description": "写真を撮ると文字を読み上げてくれるアプリ",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#FFF8F0",
+    "theme_color": "#FFE5B4",
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["education", "kids"],
+    "lang": "ja",
+    "dir": "ltr"
+}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="96" fill="#FFE5B4"/>
+  
+  <!-- 本のアイコン -->
+  <g transform="translate(256, 240)">
+    <!-- 本の左ページ -->
+    <path d="M-20 -80 Q-100 -70 -140 -40 L-140 100 Q-100 70 -20 80 Z" 
+          fill="#FF8B6A" opacity="0.9"/>
+    <!-- 本の右ページ -->
+    <path d="M20 -80 Q100 -70 140 -40 L140 100 Q100 70 20 80 Z" 
+          fill="#FF8B6A"/>
+    <!-- 本の背表紙 -->
+    <rect x="-20" y="-80" width="40" height="160" fill="#E07050"/>
+  </g>
+  
+  <!-- 音波のアイコン -->
+  <g transform="translate(256, 380)" fill="#7CD4C0">
+    <rect x="-60" y="-20" width="12" height="40" rx="6"/>
+    <rect x="-30" y="-30" width="12" height="60" rx="6"/>
+    <rect x="0" y="-20" width="12" height="40" rx="6"/>
+    <rect x="30" y="-30" width="12" height="60" rx="6"/>
+    <rect x="60" y="-20" width="12" height="40" rx="6"/>
+  </g>
+  
+  <!-- キラキラエフェクト -->
+  <circle cx="120" cy="100" r="15" fill="#FFD93D"/>
+  <circle cx="400" cy="120" r="10" fill="#FFD93D"/>
+  <circle cx="380" cy="380" r="12" fill="#FFD93D"/>
+</svg>
