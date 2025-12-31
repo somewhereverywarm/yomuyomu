@@ -10,27 +10,21 @@
     
     <title>よむよむ</title>
     
-    <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- App Icons -->
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    
-    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <main id="app">
         <!-- カメラプレビュー -->
         <div id="camera-container">
-            <video id="camera-preview" autoplay playsinline></video>
+            <video id="camera-preview" autoplay playsinline muted></video>
             <canvas id="capture-canvas" style="display: none;"></canvas>
         </div>
 
         <!-- 下部コントロール -->
         <div class="controls">
-            <!-- 撮影ボタン（カメラアイコン） -->
             <button id="capture-btn" class="capture-btn" aria-label="写真を撮る">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/>
@@ -39,12 +33,26 @@
             </button>
         </div>
 
-        <!-- 設定ボタン（右上） -->
+        <!-- 設定ボタン -->
         <button id="settings-btn" class="settings-btn" aria-label="設定">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.09 7.09 0 0 0-1.62-.94l-.36-2.54A.484.484 0 0 0 13.93 2h-3.86c-.24 0-.44.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.72 8.87a.49.49 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.36 1.03.7 1.62.94l.36 2.54c.03.24.23.41.47.41h3.86c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
             </svg>
         </button>
+
+        <!-- 認識完了画面（読み上げ開始ボタン） -->
+        <div id="ready-overlay" class="overlay hidden">
+            <div class="ready-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+            </div>
+            <button id="play-btn" class="play-btn" aria-label="読み上げ開始">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+        </div>
 
         <!-- 読み上げ中 -->
         <div id="reading-overlay" class="overlay hidden">
