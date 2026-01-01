@@ -1,71 +1,136 @@
-/**
- * よむよむ - デバッグ版
- */
+"use strict";
 
-const elements = {
-    cameraPreview: document.getElementById('camera-preview'),
-    captureCanvas: document.getElementById('capture-canvas'),
-    captureBtn: document.getElementById('capture-btn'),
-    readyOverlay: document.getElementById('ready-overlay'),
-    playBtn: document.getElementById('play-btn'),
-    readingOverlay: document.getElementById('reading-overlay'),
-    stopBtn: document.getElementById('stop-btn'),
-    loadingOverlay: document.getElementById('loading-overlay'),
-    errorOverlay: document.getElementById('error-overlay'),
-    retryBtn: document.getElementById('retry-btn'),
-    settingsBtn: document.getElementById('settings-btn'),
-    settingsOverlay: document.getElementById('settings-overlay'),
-    closeSettings: document.getElementById('close-settings'),
-    apiKeyInput: document.getElementById('api-key-input'),
-    saveApiKey: document.getElementById('save-api-key')
+var STORAGE_KEY = 'yomuyomu_api_key';
+var CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+var cameraReady = false;
+var stream = null;
+var recognizedText = '';
+
+window.onerror = function(msg, url, line) {
+    alert('JSエラー: ' + msg + ' (行' + line + ')');
+    return false;
 };
 
-const state = {
-    stream: null,
-    isSpeaking: false,
-    utterance: null,
-    cameraReady: false,
-    recognizedText: ''
-};
-
-const STORAGE_KEY = 'yomuyomu_api_key';
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-
-// デバッグ用ステータス表示
-function showStatus(message) {
-    console.log(message);
-    let statusEl = document.getElementById('debug-status');
-    if (!statusEl) {
-        statusEl = document.createElement('div');
-        statusEl.id = 'debug-status';
-        statusEl.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px;border-radius:10px;z-index:9999;max-width:80%;text-align:center;font-size:14px;';
-        document.body.appendChild(statusEl);
-    }
-    statusEl.textContent = message;
-    statusEl.style.display = 'block';
-}
-
-function hideStatus() {
-    const statusEl = document.getElementById('debug-status');
-    if (statusEl) statusEl.style.display = 'none';
-}
-
-function init() {
-    const savedKey = localStorage.getItem(STORAGE_KEY);
-    if (savedKey) elements.apiKeyInput.value = savedKey;
-    setupEventListeners();
-    speechSynthesis.getVoices();
-}
-
-async function startCamera() {
-    if (state.cameraReady && state.stream) return true;
+document.addEventListener('DOMContentLoaded', function() {
+    alert('アプリ起動');
     
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('カメラがサポートされていません');
-        return false;
+    var captureBtn = document.getElementById('capture-btn');
+    var playBtn = document.getElementById('play-btn');
+    var stopBtn = document.getElementById('stop-btn');
+    var retryBtn = document.getElementById('retry-btn');
+    var settingsBtn = document.getElementById('settings-btn');
+    var closeSettings = document.getElementById('close-settings');
+    var saveApiKey = document.getElementById('save-api-key');
+    var apiKeyInput = document.getElementById('api-key-input');
+    var cameraPreview = document.getElementById('camera-preview');
+    var captureCanvas = document.getElementById('capture-canvas');
+    
+    var loadingOverlay = document.getElementById('loading-overlay');
+    var readyOverlay = document.getElementById('ready-overlay');
+    var readingOverlay = document.getElementById('reading-overlay');
+    var errorOverlay = document.getElementById('error-overlay');
+    var settingsOverlay = document.getElementById('settings-overlay');
+    
+    var savedKey = localStorage.getItem(STORAGE_KEY);
+    if (savedKey) apiKeyInput.value = savedKey;
+    
+    speechSynthesis.getVoices();
+    
+    function hideAll() {
+        loadingOverlay.className = 'overlay hidden';
+        readyOverlay.className = 'overlay hidden';
+        readingOverlay.className = 'overlay hidden';
+        errorOverlay.className = 'overlay hidden';
     }
-
-    try {
-        showStatus('カメラを起動中...');
-        state.stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment', width:
+    
+    function startCamera() {
+        alert('カメラ起動開始');
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+        .then(function(s) {
+            stream = s;
+            cameraPreview.srcObject = stream;
+            cameraPreview.play();
+            cameraReady = true;
+            alert('カメラ起動成功');
+        })
+        .catch(function(err) { alert('カメラエラー: ' + err.message); });
+    }
+    
+    function capture() {
+        var ctx = captureCanvas.getContext('2d');
+        captureCanvas.width = cameraPreview.videoWidth;
+        captureCanvas.height = cameraPreview.videoHeight;
+        ctx.drawImage(cameraPreview, 0, 0);
+        return captureCanvas.toDataURL('image/jpeg', 0.7);
+    }
+    
+    function callAPI(imageData) {
+        var apiKey = localStorage.getItem(STORAGE_KEY);
+        var base64 = imageData.replace(/^data:image\/\w+;base64,/, '');
+        alert('API呼び出し中...');
+        
+        fetch(CLAUDE_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1024,
+                messages: [{ role: 'user', content: [
+                    { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+                    { type: 'text', text: 'この画像の文字を読んで。' }
+                ]}]
+            })
+        })
+        .then(function(res) {
+            alert('API応答: ' + res.status);
+            if (!res.ok) throw new Error('API error ' + res.status);
+            return res.json();
+        })
+        .then(function(data) {
+            recognizedText = data.content[0].text;
+            alert('認識: ' + recognizedText.substring(0, 30));
+            hideAll();
+            readyOverlay.className = 'overlay';
+        })
+        .catch(function(err) {
+            alert('APIエラー: ' + err.message);
+            hideAll();
+            errorOverlay.className = 'overlay';
+        });
+    }
+    
+    function speak() {
+        var u = new SpeechSynthesisUtterance(recognizedText);
+        u.lang = 'ja-JP';
+        u.rate = 0.9;
+        u.onstart = function() { hideAll(); readingOverlay.className = 'overlay'; };
+        u.onend = function() { hideAll(); };
+        speechSynthesis.speak(u);
+    }
+    
+    captureBtn.onclick = function() {
+        alert('撮影ボタン');
+        if (!cameraReady) { startCamera(); return; }
+        if (!localStorage.getItem(STORAGE_KEY)) { settingsOverlay.className = 'overlay'; return; }
+        hideAll();
+        loadingOverlay.className = 'overlay';
+        var img = capture();
+        alert('画像サイズ: ' + Math.round(img.length/1024) + 'KB');
+        callAPI(img);
+    };
+    
+    playBtn.onclick = function() { speak(); };
+    stopBtn.onclick = function() { speechSynthesis.cancel(); hideAll(); };
+    retryBtn.onclick = function() { hideAll(); };
+    settingsBtn.onclick = function() { settingsOverlay.className = 'overlay'; };
+    closeSettings.onclick = function() { settingsOverlay.className = 'overlay hidden'; };
+    saveApiKey.onclick = function() {
+        var key = apiKeyInput.value.trim();
+        if (key) { localStorage.setItem(STORAGE_KEY, key); settingsOverlay.className = 'overlay hidden'; alert('保存しました'); }
+    };
+});
