@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 max_tokens: 1024,
                 messages: [{ role: 'user', content: [
                     { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-                    { type: 'text', text: 'この画像の文字を読んで。' }
+                    { type: 'text', text: 'あなたはOCRです。画像内の文字を一字一句そのまま書き起こしてください。要約・説明・解釈は絶対にしないでください。見出し、本文、キャプションなど、見える文字をすべてそのまま出力してください。縦書きは上から下、右から左の順で読んでください。' }
                 ]}]
             })
         })
